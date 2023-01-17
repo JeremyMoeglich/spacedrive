@@ -8,9 +8,10 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 	data: ExplorerItem;
 	index: number;
 	selected: boolean;
+	openFile: () => void;
 }
 
-function FileRow({ data, index, selected, ...props }: Props) {
+function FileRow({ data, index, selected, openFile, ...props }: Props) {
 	return (
 		<div
 			{...props}
@@ -19,6 +20,7 @@ function FileRow({ data, index, selected, ...props }: Props) {
 				selected ? 'border-accent' : 'border-transparent',
 				index % 2 == 0 && 'bg-[#00000006] dark:bg-[#00000030]'
 			)}
+			onDoubleClick={openFile}
 		>
 			{columns.map((col) => (
 				<div

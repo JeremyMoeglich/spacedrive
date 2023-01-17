@@ -215,11 +215,11 @@ const WrappedItem: React.FC<WrappedItemProps> = ({
 }) => {
 	const [_, setSearchParams] = useSearchParams();
 
-	const onDoubleClick = useCallback(() => {
+	const openFile = useCallback(() => {
 		if (isPath(item) && item.is_dir) setSearchParams({ path: item.materialized_path });
 	}, [item, setSearchParams]);
 
-	const onClick = useCallback(() => {
+	const toggleSelect = useCallback(() => {
 		getExplorerStore().selectedRowIndex = isSelected ? -1 : index;
 	}, [isSelected, index]);
 
@@ -228,12 +228,12 @@ const WrappedItem: React.FC<WrappedItemProps> = ({
 		<ItemComponent
 			data={item}
 			index={index}
-			onClick={onClick}
-			onDoubleClick={onDoubleClick}
+			onClick={toggleSelect}
 			selected={isSelected}
 			setShowEncryptDialog={setShowEncryptDialog}
 			setShowDecryptDialog={setShowDecryptDialog}
 			setAlertDialogData={setAlertDialogData}
+			openFile={openFile}
 		/>
 	);
 

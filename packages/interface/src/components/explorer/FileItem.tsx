@@ -31,6 +31,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 	setShowEncryptDialog: (isShowing: boolean) => void;
 	setShowDecryptDialog: (isShowing: boolean) => void;
 	setAlertDialogData: (data: GenericAlertDialogProps) => void;
+	openFile: () => void;
 }
 
 function FileItem({
@@ -40,6 +41,7 @@ function FileItem({
 	setShowEncryptDialog,
 	setShowDecryptDialog,
 	setAlertDialogData,
+	openFile,
 	...rest
 }: Props) {
 	const objectData = data ? (isObject(data) ? data : data.object) : null;
@@ -51,6 +53,7 @@ function FileItem({
 			setShowEncryptDialog={setShowEncryptDialog}
 			setShowDecryptDialog={setShowDecryptDialog}
 			setAlertDialogData={setAlertDialogData}
+			openFile={openFile}
 		>
 			<div
 				onContextMenu={(e) => {
@@ -60,6 +63,7 @@ function FileItem({
 				}}
 				{...rest}
 				draggable
+				onDoubleClick={openFile}
 				className={clsx('inline-block w-[100px] mb-3', rest.className)}
 			>
 				<div

@@ -62,7 +62,7 @@ const AssignTagMenuItems = (props: { objectId: number }) => {
 	);
 };
 
-function OpenInNativeExplorer() {
+export function OpenInNativeExplorer({ show_keybind }: { show_keybind: boolean }) {
 	const platform = usePlatform();
 	const store = getExplorerStore();
 	const os = useOperatingSystem();
@@ -80,7 +80,7 @@ function OpenInNativeExplorer() {
 			{platform.openPath && (
 				<CM.Item
 					label={`Open in ${osFileBrowserName}`}
-					keybind="⌘Y"
+					keybind={show_keybind ? "⌘Y" : undefined}
 					onClick={() => {
 						alert('TODO: Open in FS');
 						// console.log('TODO', store.contextMenuActiveItem);
@@ -102,7 +102,7 @@ export function ExplorerContextMenu(props: PropsWithChildren) {
 	return (
 		<div className="relative">
 			<CM.ContextMenu trigger={props.children}>
-				<OpenInNativeExplorer />
+				<OpenInNativeExplorer show_keybind={true} />
 
 				<CM.Separator />
 
@@ -157,6 +157,7 @@ export interface FileItemContextMenuProps extends PropsWithChildren {
 	setShowEncryptDialog: (isShowing: boolean) => void;
 	setShowDecryptDialog: (isShowing: boolean) => void;
 	setAlertDialogData: (data: GenericAlertDialogProps) => void;
+	openFile: () => void;
 }
 
 export function FileItemContextMenu(props: FileItemContextMenuProps) {
@@ -175,13 +176,13 @@ export function FileItemContextMenu(props: FileItemContextMenuProps) {
 	return (
 		<div className="relative">
 			<CM.ContextMenu trigger={props.children}>
-				<CM.Item label="Open" keybind="⌘O" />
+				<CM.Item label="Open" keybind="⌘O" onClick={props.openFile} />
 				<CM.Item label="Open with..." />
 
 				<CM.Separator />
 
 				<CM.Item label="Quick view" keybind="␣" />
-				<OpenInNativeExplorer />
+				<OpenInNativeExplorer show_keybind={true} />
 
 				<CM.Separator />
 

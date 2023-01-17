@@ -6,7 +6,7 @@ import {
 	useCurrentLibrary,
 	useDebugState,
 	useLibraryMutation,
-	useLibraryQuery
+	useLibraryQuery,
 } from '@sd/client';
 import {
 	Button,
@@ -19,10 +19,11 @@ import {
 	SelectOption,
 	Switch,
 	cva,
-	tw
+	tw,
+	ContextMenu as CM,
 } from '@sd/ui';
 import clsx from 'clsx';
-import { CheckCircle, CirclesFour, Gear, Lock, Planet, Plus, ShareNetwork } from 'phosphor-react';
+import { CheckCircle, CirclesFour, Gear, Lock, Planet, Plus, ShareNetwork, Trash } from 'phosphor-react';
 import React, { PropsWithChildren, useState } from 'react';
 import { NavLink, NavLinkProps } from 'react-router-dom';
 import { useOperatingSystem } from '~/hooks/useOperatingSystem';
@@ -30,6 +31,7 @@ import { usePlatform } from '~/util/Platform';
 
 import AddLocationDialog from '../dialog/AddLocationDialog';
 import CreateLibraryDialog from '../dialog/CreateLibraryDialog';
+import { OpenInNativeExplorer } from '../explorer/ExplorerContextMenu';
 import { Folder } from '../icons/Folder';
 import { JobsManager } from '../jobs/JobManager';
 import { MacTrafficLights } from '../os/TrafficLights';
@@ -307,11 +309,51 @@ const SidebarHeadingOptionsButton: React.FC<{ to: string; icon?: React.FC }> = (
 	);
 };
 
+function LocationsSidebarContextMenu(props: PropsWithChildren<{ locationId: number }>) {
+	const { mutate: deleteLocation } = useLibraryMutation('locations.delete');
+	const { locationId } = props;
+	return (
+		<CM.ContextMenu trigger={props.children}>
+			<NavLink to={`location/${locationId}`}>
+				<CM.Item label="Open" />
+			</NavLink>
+			<OpenInNativeExplorer show_keybind={false} />
+			<NavLink to={`settings/locations`}>
+				<CM.Item label="Configure" />
+			</NavLink>
+			<CM.Item icon={Trash} label="Delete" variant="danger" onClick={(e) => {
+				e.preventDefault();
+				deleteLocation(locationId)
+			}} />
+
+		</CM.ContextMenu>
+	);
+}
+
+
+function TagsSidebarContextMenu(props: PropsWithChildren<{ tagId: number }>) {
+	const { mutate: deleteTag } = useLibraryMutation('tags.delete');
+	const { tagId } = props;
+	return (
+		<CM.ContextMenu trigger={props.children}>
+			<NavLink to={`settings/tags`}>
+				<CM.Item label="Configure" />
+			</NavLink>
+			<CM.Item icon={Trash} label="Delete" variant="danger" onClick={(e) => {
+				e.preventDefault();
+				deleteTag(tagId)
+			}} />
+
+		</CM.ContextMenu>
+	);
+}
+
 function LibraryScopedSection() {
 	const platform = usePlatform();
 	const { data: locations } = useLibraryQuery(['locations.list'], { keepPreviousData: true });
 	const { data: tags } = useLibraryQuery(['tags.list'], { keepPreviousData: true });
 	const { mutate: createLocation } = useLibraryMutation('locations.create');
+	const { mutate: createTag } = useLibraryMutation('tags.create');
 	const [textLocationDialogOpen, setTextLocationDialogOpen] = useState(false);
 
 	return (
@@ -322,26 +364,30 @@ function LibraryScopedSection() {
 					actionArea={
 						<>
 							{/* <SidebarHeadingOptionsButton to="/settings/locations" icon={CogIcon} /> */}
-							<SidebarHeadingOptionsButton to="/settings/locations" />
+							<Tooltip label="Location settings" position='left'>
+								<SidebarHeadingOptionsButton to="/settings/locations" />
+							</Tooltip>
 						</>
 					}
 				>
 					{locations?.map((location) => {
 						return (
-							<div key={location.id} className="flex flex-row items-center">
-								<SidebarLink
-									className="relative w-full group"
-									to={{
-										pathname: `location/${location.id}`
-									}}
-								>
-									<div className="-mt-0.5 mr-1 flex-grow-0 flex-shrink-0">
-										<Folder size={18} />
-									</div>
+							<LocationsSidebarContextMenu locationId={location.id}>
+								<div key={location.id} className="flex flex-row items-center">
+									<SidebarLink
+										className="relative w-full group"
+										to={{
+											pathname: `location/${location.id}`
+										}}
+									>
+										<div className="-mt-0.5 mr-1 flex-grow-0 flex-shrink-0">
+											<Folder size={18} />
+										</div>
 
-									<span className="flex-grow flex-shrink-0">{location.name}</span>
-								</SidebarLink>
-							</div>
+										<span className="flex-grow flex-shrink-0">{location.name}</span>
+									</SidebarLink>
+								</div>
+							</LocationsSidebarContextMenu>
 						);
 					})}
 					{(locations?.length || 0) < 4 && (
@@ -379,17 +425,21 @@ function LibraryScopedSection() {
 			{!!tags?.length && (
 				<SidebarSection
 					name="Tags"
-					actionArea={<SidebarHeadingOptionsButton to="/settings/tags" />}
+					actionArea={<Tooltip label="Tags settings" position='left'>
+						<SidebarHeadingOptionsButton to="/settings/tags" />
+					</Tooltip>}
 				>
 					<div className="mt-1 mb-2">
 						{tags?.slice(0, 6).map((tag, index) => (
-							<SidebarLink key={index} to={`tag/${tag.id}`} className="">
-								<div
-									className="w-[12px] h-[12px] rounded-full"
-									style={{ backgroundColor: tag.color || '#efefef' }}
-								/>
-								<span className="ml-1.5 text-sm">{tag.name}</span>
-							</SidebarLink>
+							<TagsSidebarContextMenu tagId={tag.id}>
+								<SidebarLink key={index} to={`tag/${tag.id}`} className="">
+									<div
+										className="w-[12px] h-[12px] rounded-full"
+										style={{ backgroundColor: tag.color || '#efefef' }}
+									/>
+									<span className="ml-1.5 text-sm">{tag.name}</span>
+								</SidebarLink>
+							</TagsSidebarContextMenu>
 						))}
 					</div>
 				</SidebarSection>

@@ -1,10 +1,10 @@
 // import types from '../../constants/file-types.json';
-import { ExplorerContext, ExplorerItem, useLibraryQuery } from '@sd/client';
-import { Button, tw } from '@sd/ui';
+import { ExplorerContext, ExplorerItem, useLibraryMutation, useLibraryQuery } from '@sd/client';
+import { Button, tw, ContextMenu as CM } from '@sd/ui';
 import clsx from 'clsx';
 import dayjs from 'dayjs';
-import { Barcode, CircleWavyCheck, Clock, Cube, Link, Lock, Snowflake } from 'phosphor-react';
-import { useEffect, useState } from 'react';
+import { Barcode, CircleWavyCheck, Clock, Cube, Link, Lock, Snowflake, Trash } from 'phosphor-react';
+import { PropsWithChildren, useEffect, useState } from 'react';
 
 import { ObjectKind } from '../../util/kind';
 import { DefaultProps } from '../primitive/types';
@@ -34,6 +34,19 @@ const InspectorIcon = ({ component: Icon, ...props }: any) => (
 interface Props extends DefaultProps<HTMLDivElement> {
 	context?: ExplorerContext;
 	data?: ExplorerItem;
+}
+
+const InspectorTagContextMenu = ({ tagId, children, objectId }: PropsWithChildren<{ tagId: number, objectId: number }>) => {
+	const { mutate: assignTag } = useLibraryMutation('tags.assign');
+
+	return (
+		<CM.ContextMenu trigger={children}>
+			<CM.Item icon={Trash} label="Remove from element" onClick={(e) => {
+				e.preventDefault();
+				assignTag({ tag_id: tagId, unassign: true, object_id: objectId })
+			}} />
+		</CM.ContextMenu>
+	);
 }
 
 export const Inspector = (props: Props) => {
@@ -120,13 +133,15 @@ export const Inspector = (props: Props) => {
 									<InfoPill>{isDir ? 'Folder' : ObjectKind[objectData?.kind || 0]}</InfoPill>
 									{props.data.extension && <InfoPill>{props.data.extension}</InfoPill>}
 									{tags?.data?.map((tag) => (
-										<InfoPill
-											className="!text-white"
-											key={tag.id}
-											style={{ backgroundColor: tag.color + 'CC' }}
-										>
-											{tag.name}
-										</InfoPill>
+										<InspectorTagContextMenu tagId={tag.id} objectId={objectData?.id ?? -1}>
+											<InfoPill
+												className="!text-white"
+												key={tag.id}
+												style={{ backgroundColor: tag.color + 'CC' }}
+											>
+												{tag.name}
+											</InfoPill>
+										</InspectorTagContextMenu>
 									))}
 									<PlaceholderPill>Add Tag</PlaceholderPill>
 								</div>
